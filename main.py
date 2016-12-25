@@ -14,9 +14,14 @@ root.overrideredirect(1)
 root.geometry("%dx%d+0+0" % (w, h))
 root.configure(bg="black")
 
+ThemeLength = 184000
 initializeSnack(root)
 s = Sound()
 s.read('Thief in the Night.mp3')
-s.play()
+def playTheme():
+    print "loop"
+    s.play()
+    root.after(ThemeLength, playTheme)
+playTheme()
 
 root.mainloop()
