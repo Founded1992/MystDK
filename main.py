@@ -46,27 +46,26 @@ class SceneBasic():
         self.clickZones = clkZns
     def getImg(self):
         return self.image
-class ClickZone():
-    def __init__(self, x, y, w, h, TRL):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-        self.TRL = TRL
-class TRLBasic():
-    def __init__(self, targetString):
-        self.targetString = targetString
-    def action(self):
-        d.BasicSelect(self.targetString)
-class TRLSlide():
-    def __init__(self, targetString, direction):
-        self.targetString = targetString
-        self.direction = direction
-    def action(self):
-        d.slideImg(self.targetString, self.direction)
-        d.BasicSelect(self.targetString)
-class drawer():
     def slideImg(self, targetStr, direction):
+        global currScene
+        im = Image.open(self.image)
+        imw = im.size[0]
+        imh = im.size[1]
+        scale = 1
+        if imw/imh < sw/sh: #If image is taller than screen
+            #set scale by height, not width
+            scale = sh/imh
+        else:
+            #set scale by width, not height
+            scale = sw/imw
+        currScene.imw = int(scale*imw)
+        currScene.imh = int(scale*imh)
+        currScene.offx = (sw - currScene.imw) / 2
+        currScene.offy = (sh - currScene.imh) / 2
+        im = im.resize((currScene.imw, currScene.imh), Image.ANTIALIAS)
+        self.imp = ImageTk.PhotoImage(im)
+        self.currScHndl = c.create_image((sw/2, sh/2), image=self.imp)
+        ##SLIDE
         im = Image.open(world[targetStr].getImg())
         imw = im.size[0]
         imh = im.size[1]
@@ -106,10 +105,9 @@ class drawer():
             c.update()
             #print("cake awesome cake")
             time.sleep(0.01)
-    def BasicSelect(self, targetScene):
+    def dispImg(self):
         global currScene
-        currScene = world[targetScene]
-        im = Image.open(currScene.getImg())
+        im = Image.open(self.image)
         imw = im.size[0]
         imh = im.size[1]
         scale = 1
@@ -126,6 +124,31 @@ class drawer():
         im = im.resize((currScene.imw, currScene.imh), Image.ANTIALIAS)
         self.imp = ImageTk.PhotoImage(im)
         self.currScHndl = c.create_image((sw/2, sh/2), image=self.imp)
+class ObjScene(SceneBasic):
+    pass
+class ClickZone():
+    def __init__(self, x, y, w, h, TRL):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.TRL = TRL
+class TRLBasic():
+    def __init__(self, targetString):
+        self.targetString = targetString
+    def action(self):
+        global currScene
+        currScene = world[self.targetString]
+        currScene.dispImg()
+class TRLSlide():
+    def __init__(self, targetString, direction):
+        self.targetString = targetString
+        self.direction = direction
+    def action(self):
+        global currScene
+        currScene.slideImg(self.targetString, self.direction)
+        currScene = world[self.targetString]
+        currScene.dispImg()
         
 world = {
     "cube_room":SceneBasic("RenderPictures/Cube_Y_G_Face.png", [ClickZone(0, 0, 0.1, 1, TRLSlide("hallway_code", 1)), ClickZone(0.9, 0, 0.1, 1, TRLSlide("hallway_code", 3))]),
@@ -134,8 +157,8 @@ world = {
     "hallway_cube":SceneBasic("RenderPictures/Hallway_Cube_Y_G_Face.png", [ClickZone(0, 0, 0.1, 1, TRLSlide("code_room", 1)), ClickZone(0.9, 0, 0.1, 1, TRLSlide("code_room", 3)), ClickZone(0.3, 0, 0.4, 1, TRLBasic("cube_room"))]),
 }
 
-d = drawer()
-d.BasicSelect("cube_room")
+currScene = world["cube_room"]
+currScene.dispImg()
 
 def clickHandle(e):
     scenex = (e.x - currScene.offx) / currScene.imw
