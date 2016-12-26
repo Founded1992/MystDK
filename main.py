@@ -5,6 +5,8 @@ from PIL import Image, ImageTk
 from threading import Thread
 import time
 import sys
+import pygame
+import os
 
 root = Tk()
 
@@ -22,7 +24,16 @@ c.configure(bg="black", bd=0, width=sw, height=sh, highlightthickness=0)
 c.pack()
 
 ThemeLength = 184000
-initializeSnack(root)
+#Sound system 3: uses Pygame to avoid cuts in sound.
+pygame.mixer.pre_init(44100, -16, 2, 2048)
+pygame.init()
+try:
+    pygame.mixer.music.load('Thief in the Night.mp3')
+    pygame.mixer.music.play(-1)
+except:
+    print "Failed to load sound files."
+#Sound system 2: uses thread to loop.
+'''initializeSnack(root)
 s = Sound()
 s.read('Thief in the Night.mp3')
 def playThemeSmooth():
@@ -30,8 +41,8 @@ def playThemeSmooth():
         s.play()
         time.sleep(ThemeLength)
 t = Thread(target=playThemeSmooth)
-#t.start()
-
+t.start()'''
+#Sound system 1: uses mainloop to loop.
 '''def playTheme():
     s.play()
     root.after(ThemeLength, playTheme)
